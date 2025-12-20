@@ -277,6 +277,10 @@ function removeBridgesIgnoringLeaveMessages(ctx: TediCrossContext, next: () => v
  * @param next Function to pass control to next middleware
  */
 function informThisIsPrivateBot(ctx: TediCrossContext, next: () => void) {
+	if (ctx.TediCross.settings.telegram.suppressThisIsPrivateBotMessage) {
+		// Monkeypatch for the issue below
+		return;
+	}
 	R.ifElse(
 		// If there are no bridges
 		//@ts-ignore
@@ -311,6 +315,7 @@ function informThisIsPrivateBot(ctx: TediCrossContext, next: () => void) {
 							console.log(`Error send tg message: ${err}`);
 						});
 				} else {
+					// FIXME: Sometimes, this crashes with "Cannot read properties of undefined (reading 'chat')", see monkeypatch above
 					ctx.TediCross.antiInfoSpamSet.delete(ctx.message!.chat.id);
 				}
 			}
